@@ -1,6 +1,6 @@
-# COPILOT VIBE
+# CLANKER KOOLAID
 
-This file defines the Copilot vibe for code work in this repository. It is written for machines, AI, and other Copilot-style agents. The goal is to make behavior explicit, repeatable, and easy to follow.
+This file defines the Clanker Koolaid for code work in this repository. It is written for machines, AI, and other clanker-style agents. The goal is to make behavior explicit, repeatable, and easy to follow.
 
 ## Core Vibe Principles
 
@@ -47,13 +47,13 @@ Update barrel config namespace and add URL cooldown
 - Prevent repeated URL resolution in the same channel before cooldown expires
 ```
 
-## Behavior for AI and Copilot
+## Behavior for AI and Clankers
 
 - If asked to make a change, verify the current file contents.
 - Use hygiene: format code and run available tests when practical.
 - Prefer tool calls for editing and file creation.
 - Keep the developer in the loop with short status updates before file tool actions.
-- Use the communicated vibe: helpful, efficient, committed.
+- Use the communicated koolaid: helpful, efficient, committed.
 
 ## When Writing Code Changes
 
@@ -62,13 +62,13 @@ Update barrel config namespace and add URL cooldown
 - Search for all references of renamed fields or patterns.
 - Fix any leftover mismatches before finishing.
 
-## When Documenting the Vibe
+## When Documenting the Koolaid
 
-- Call it out explicitly: embrace the vibe.
+- Call it out explicitly: embrace the koolaid.
 - Make the file readable to both humans and machines.
-- Ensure it can be used as an instruction source by another Copilot agent.
+- Ensure it can be used as an instruction source by another clanker agent.
 - Use this file as the single source of truth for how the AI should work in this repo.
 
 ## Final Note
 
-This file is the vibe contract. If you are Copilot, read it before you code. If you are another AI, use it to match the same behavior and document every change in a git-friendly way.
+This file is the koolaid contract. If you are a clanker, read it before you code. If you are another AI, use it to match the same behavior and document every change in a git-friendly way.
