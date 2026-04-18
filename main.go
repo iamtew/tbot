@@ -16,6 +16,21 @@ import (
 const version = "0.1"
 
 var buildInfo = "dev"
+var buildTime = "unknown"
+var gitCommit = "unknown"
+var gitStatus = "unknown"
+var gitBranch = "unknown"
+var githubLink = "unknown"
+
+func displayBuildInfo() {
+	fmt.Printf("tbot version %s\n", version)
+	fmt.Printf("Build: %s\n", buildInfo)
+	fmt.Printf("Build time: %s\n", buildTime)
+	fmt.Printf("Git commit: %s\n", gitCommit)
+	fmt.Printf("Git status: %s\n", gitStatus)
+	fmt.Printf("Git branch: %s\n", gitBranch)
+	fmt.Printf("GitHub: %s\n", githubLink)
+}
 
 func usage() {
 	fmt.Fprintf(flag.CommandLine.Output(), "tbot - IRC bot\n\n")
@@ -60,16 +75,17 @@ func stopBot(pidFile string) error {
 
 func main() {
 	var (
-		configPath   string
-		logLevel     string
-		quiet        bool
-		daemon       bool
-		verbose      bool
-		debug        bool
-		writeExample string
-		stop         bool
-		pidFile      string
-		showVersion  bool
+		configPath    string
+		logLevel      string
+		quiet         bool
+		daemon        bool
+		verbose       bool
+		debug         bool
+		writeExample  string
+		stop          bool
+		pidFile       string
+		showVersion   bool
+		showBuildInfo bool
 	)
 
 	flag.StringVar(&writeExample, "example", "", "Write example config to path and exit")
@@ -91,8 +107,14 @@ func main() {
 	flag.StringVar(&pidFile, "P", "", "PID file path")
 	flag.BoolVar(&showVersion, "version", false, "Show version and exit")
 	flag.BoolVar(&showVersion, "V", false, "Show version and exit")
+	flag.BoolVar(&showBuildInfo, "build-info", false, "Show detailed build information and exit")
 	flag.Usage = usage
 	flag.Parse()
+
+	if showBuildInfo {
+		displayBuildInfo()
+		return
+	}
 
 	if showVersion {
 		fmt.Printf("%s %s\n", version, buildInfo)
@@ -154,6 +176,9 @@ func main() {
 	}
 
 	configPath = filepath.Clean(configPath)
+	if !quiet {
+		fmt.Printf("tbot %s starting with config %s\n", version, configPath)
+	}
 	config, err := LoadConfig(configPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed loading config %s: %v\n", configPath, err)

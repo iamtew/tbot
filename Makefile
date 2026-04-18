@@ -10,21 +10,34 @@ ifeq ($(OS),Windows_NT)
 	RUNCMD := cmd /c
 	RUNBIN := .\\$(BINARY)$(EXE)
 	RM := cmd /c del /Q /F $(BINARY)$(EXE)
+	# Windows build info via PowerShell
+	BUILD_TIME := $(shell powershell -Command "Get-Date -Format 'yyyy-MM-dd HH:mm:ss'")
+	GIT_COMMIT := $(shell git rev-parse --short HEAD 2>nul || echo "unknown")
+	GIT_STATUS := $(shell if git diff-index --quiet HEAD -- 2>nul; then echo "clean"; else echo "dirty"; fi)
+	GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>nul || echo "unknown")
+	GITHUB_LINK := $(shell git config --get remote.origin.url 2>nul || echo "unknown")
 else
 	EXE :=
 	RUNCMD :=
 	RUNBIN := ./$(BINARY)
-	RM := rm -f $(BINARY)
+	RM := rm -f $(BINARY)$(EXE)
+	# Unix build info via shell
+	BUILD_TIME := $(shell date '+%Y-%m-%d %H:%M:%S')
+	GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+	GIT_STATUS := $(shell if git diff-index --quiet HEAD -- 2>/dev/null; then echo "clean"; else echo "dirty"; fi)
+	GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+	GITHUB_LINK := $(shell git config --get remote.origin.url 2>/dev/null || echo "unknown")
 endif
 
 BIN := $(BINARY)$(EXE)
+LDFLAGS := -X "main.buildTime=$(BUILD_TIME)" -X "main.gitCommit=$(GIT_COMMIT)" -X "main.gitStatus=$(GIT_STATUS)" -X "main.gitBranch=$(GIT_BRANCH)" -X "main.githubLink=$(GITHUB_LINK)"
 
 .PHONY: all build test fmt fmt-check vet tidy clean install run example
 
 all: build
 
 build: fmt-check $(GOFILES)
-	$(GO) build -o $(BIN) $(PKG)
+	$(GO) build -ldflags '$(LDFLAGS)' -o $(BIN) $(PKG)
 
 test:
 	$(GO) test ./...
