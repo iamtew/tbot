@@ -23,7 +23,7 @@ tbot is a compact, eyes-on IRC bot for people who want command-driven control an
 |---|---|
 | Single-network connection | One IRC server, one nick, multiple channels |
 | Config file | TOML-based configuration for network, bot, admins, barrels |
-| Admin auth | Exact usermask authorization for private admin commands |
+| Admin auth | Exact or wildcard usermask authorization for private admin commands |
 | Public commands | Command prefix configurable; default is `.` |
 | Runtime control | Reload config, write config, reconnect, stop without killing the bot |
 | Logging | Console output with optional disk log capture |
@@ -86,7 +86,7 @@ Stop a running bot using the pid file:
 
 - `tbot -S -P ./tbot.pid`
 
-> By default, the pid file is written next to the config file using the same name and a `.pid` extension. Public commands use the configured prefix (default `.`). Admin commands must be sent as private messages from a configured admin mask.
+> By default, the pid file is written next to the config file using the same name and a `.pid` extension. Public commands use the configured prefix (default `.`). Admin commands must be sent as private messages from a configured admin mask. Admin masks support simple wildcards like `tew!~tew@*.user.oftc.net`.
 
 ## Barrels
 

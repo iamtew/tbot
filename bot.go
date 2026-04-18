@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -41,23 +42,24 @@ func parseLogLevel(value string) LogLevel {
 }
 
 type Bot struct {
-	config        *Config
-	configPath    string
-	pidFile       string
-	conn          net.Conn
-	reader        *bufio.Reader
-	writer        *bufio.Writer
-	logger        *log.Logger
-	logLevel      LogLevel
-	quiet         bool
-	quit          chan struct{}
-	restart       chan struct{}
-	barrels       map[string]Barrel
-	barrelConfigs map[string]*BarrelConfig
-	channelModes  map[string]map[string]rune
-	adminMasks    map[string]struct{}
-	lastURL       map[string]*URLMetadata
-	mu            sync.Mutex
+	config            *Config
+	configPath        string
+	pidFile           string
+	conn              net.Conn
+	reader            *bufio.Reader
+	writer            *bufio.Writer
+	logger            *log.Logger
+	logLevel          LogLevel
+	quiet             bool
+	quit              chan struct{}
+	restart           chan struct{}
+	barrels           map[string]Barrel
+	barrelConfigs     map[string]*BarrelConfig
+	channelModes      map[string]map[string]rune
+	adminMasks        map[string]struct{}
+	adminMaskPatterns []*regexp.Regexp
+	lastURL           map[string]*URLMetadata
+	mu                sync.Mutex
 }
 
 type URLMetadata struct {
@@ -101,7 +103,15 @@ func NewBot(cfg *Config, configPath, pidFile string, quiet bool, overrideLevel s
 	}
 
 	for _, mask := range cfg.Bot.Admins {
-		bot.adminMasks[mask] = struct{}{}
+		if strings.ContainsAny(mask, "*?") {
+			if re, err := maskToRegexp(mask); err == nil {
+				bot.adminMaskPatterns = append(bot.adminMaskPatterns, re)
+			} else {
+				bot.logger.Printf("WARN invalid admin mask pattern %q: %v", mask, err)
+			}
+		} else {
+			bot.adminMasks[mask] = struct{}{}
+		}
 	}
 
 	rand.Seed(time.Now().UnixNano())
@@ -545,8 +555,22 @@ func (b *Bot) permissionLevel(channel, nick string) string {
 }
 
 func (b *Bot) isAdmin(mask string) bool {
-	_, ok := b.adminMasks[mask]
-	return ok
+	if _, ok := b.adminMasks[mask]; ok {
+		return true
+	}
+	for _, pattern := range b.adminMaskPatterns {
+		if pattern.MatchString(mask) {
+			return true
+		}
+	}
+	return false
+}
+
+func maskToRegexp(mask string) (*regexp.Regexp, error) {
+	quoted := regexp.QuoteMeta(mask)
+	quoted = strings.ReplaceAll(quoted, `\*`, `.*`)
+	quoted = strings.ReplaceAll(quoted, `\?`, `.`)
+	return regexp.Compile(`^` + quoted + `$`)
 }
 
 func (b *Bot) sendRaw(format string, args ...interface{}) {
