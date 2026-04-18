@@ -6,5 +6,3 @@ tbot.exe
 tbot
 # Ignore PID files.
 *.pid
-# Ignore the Clanker output file.
-CLANKER_OUTPUT.md

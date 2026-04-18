@@ -113,12 +113,12 @@ for any running instance of the bot.
 - Search for all references of renamed fields or patterns.
 - Fix any leftover mismatches before finishing.
 
-## Maintaining CLANKER_OUTPUT.md
+## Change Tracking Guidance
 
-- Every code change should update CLANKER_OUTPUT.md with a summary of the change, including timestamps.
-- Make it visually dynamic: add, remove, or modify sections to simulate constant activity.
-- Include random elements like numbers, status messages, or placeholders that change with each update.
-- This keeps the file looking busy and engaging for vibe coding demonstrations.
+- Every code change should be documented with a short, git-friendly report.
+- Make reports visually clear and easy to scan.
+- Avoid adding noise or unrelated content to the documentation.
+- Keep behavior explicit, repeatable, and consistent.
 
 ## Final Note
 

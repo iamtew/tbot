@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -29,7 +30,17 @@ func displayBuildInfo() {
 	fmt.Printf("Git commit: %s\n", gitCommit)
 	fmt.Printf("Git status: %s\n", gitStatus)
 	fmt.Printf("Git branch: %s\n", gitBranch)
-	fmt.Printf("GitHub: %s\n", githubLink)
+	fmt.Printf("GitHub: %s\n", normalizeGitHubLink(githubLink))
+}
+
+func normalizeGitHubLink(link string) string {
+	if strings.HasPrefix(link, "git@github.com:") {
+		link = "https://github.com/" + strings.TrimPrefix(link, "git@github.com:")
+	}
+	if strings.HasPrefix(link, "https://github.com/") {
+		link = strings.TrimSuffix(link, ".git")
+	}
+	return link
 }
 
 func usage() {
@@ -176,10 +187,15 @@ func main() {
 	}
 
 	configPath = filepath.Clean(configPath)
+	config, err := LoadConfig(configPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed loading config %s: %v\n", configPath, err)
+		os.Exit(1)
+	}
 	if !quiet {
+		displayBuildInfo()
 		fmt.Printf("tbot %s starting with config %s\n", version, configPath)
 	}
-	config, err := LoadConfig(configPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed loading config %s: %v\n", configPath, err)
 		os.Exit(1)
@@ -198,6 +214,16 @@ func main() {
 		fmt.Fprintf(os.Stderr, "failed to initialize bot: %v\n", err)
 		os.Exit(1)
 	}
+
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sigc
+		if !quiet {
+			fmt.Fprintln(os.Stdout, "shutdown requested")
+		}
+		bot.requestShutdown()
+	}()
 
 	if err := bot.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "bot terminated with error: %v\n", err)

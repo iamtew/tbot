@@ -335,6 +335,14 @@ func (b *Bot) handlePrivMsg(msg IRCMessage) {
 	}
 
 	if target == b.config.Bot.Nick {
+		if len(text) >= 2 && strings.HasPrefix(text, "\x01") && strings.HasSuffix(text, "\x01") {
+			ctcp := strings.TrimSuffix(strings.TrimPrefix(text, "\x01"), "\x01")
+			parts := strings.Fields(ctcp)
+			if len(parts) > 0 && strings.ToUpper(parts[0]) == "VERSION" {
+				b.sendRaw("NOTICE %s :\x01VERSION tbot v%s - https://github.com/iamtew/tbot\x01", sourceNick, version)
+			}
+			return
+		}
 		b.handlePrivateCommand(msg)
 		return
 	}
