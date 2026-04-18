@@ -158,7 +158,8 @@ func (b *YouTubeBarrel) fetchYouTubeMetadata(logger func(format string, args ...
 	// Use YouTube Data API
 	logger("YouTube: Using API key length: %d", len(b.apikey))
 	apiURL := fmt.Sprintf("https://www.googleapis.com/youtube/v3/videos?id=%s&key=%s&part=snippet,statistics", videoID, b.apikey)
-	logger("YouTube: API URL exact: %s", apiURL)
+	maskedURL := fmt.Sprintf("https://www.googleapis.com/youtube/v3/videos?id=%s&key=***MASKED***&part=snippet,statistics", videoID)
+	logger("YouTube: API URL: %s", maskedURL)
 	resp, err := http.Get(apiURL)
 	if err != nil {
 		logger("YouTube: API HTTP GET error: %v", err)
