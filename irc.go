@@ -15,6 +15,7 @@ type IRCMessage struct {
 	Trailing string
 }
 
+// ParseIRCLine parses a raw IRC protocol line into structured fields.
 func ParseIRCLine(line string) IRCMessage {
 	msg := IRCMessage{Raw: line}
 	cursor := 0
@@ -62,6 +63,7 @@ func ParseIRCLine(line string) IRCMessage {
 	return msg
 }
 
+// TruePrefix strips the leading colon from an IRC prefix, if present.
 func TruePrefix(prefix string) string {
 	if strings.HasPrefix(prefix, ":") {
 		return prefix[1:]

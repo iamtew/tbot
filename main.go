@@ -1,3 +1,5 @@
+// Package main is the executable entrypoint for tbot.
+// It parses command-line options, loads configuration, and starts or stops the bot.
 package main
 
 import (
@@ -19,6 +21,8 @@ func usage() {
 	flag.PrintDefaults()
 }
 
+// defaultPidFileForConfig returns the default pid file path for a given config file.
+// If the config file is a TOML file, the PID file uses the same name with a .pid extension.
 func defaultPidFileForConfig(path string) string {
 	ext := strings.ToLower(filepath.Ext(path))
 	if ext == ".toml" || ext != "" {
@@ -27,6 +31,8 @@ func defaultPidFileForConfig(path string) string {
 	return path + ".pid"
 }
 
+// stopBot reads the pid file and sends a stop signal to the running tbot process.
+// On Windows it kills the process, and on POSIX platforms it sends SIGTERM.
 func stopBot(pidFile string) error {
 	data, err := os.ReadFile(pidFile)
 	if err != nil {

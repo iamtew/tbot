@@ -1,3 +1,4 @@
+// Go module file for the tbot project.
 module github.com/iamtew/tbot
 
 go 1.22

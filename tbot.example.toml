@@ -1,3 +1,5 @@
+# Example tbot configuration file.
+# Rename this file and edit it for your IRC server and bot settings.
 [network]
 server = "irc.example.net"
 port = 6667
@@ -14,8 +16,11 @@ log_level = "info"
 pidfile = ""
 
 [barrel.url]
+# Enable URL title lookup and repeat suppression.
 enabled = true
+# Number of seconds before the same URL can be resolved again in the same channel.
 cooldown = 60
 
 [barrel.fish]
+# Enable the fish joke barrel.
 enabled = true

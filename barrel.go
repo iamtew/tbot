@@ -1,3 +1,4 @@
+// Package main defines barrels, which are pluggable bot behavior modules.
 package main
 
 type Barrel interface {

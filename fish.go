@@ -6,10 +6,12 @@ import (
 	"strings"
 )
 
+// FishBarrel is a simple example barrel that responds to `fish` commands.
 type FishBarrel struct {
 	enabled bool
 }
 
+// NewFishBarrel constructs the fish barrel plugin.
 func NewFishBarrel() *FishBarrel {
 	return &FishBarrel{}
 }
@@ -29,6 +31,7 @@ func (b *FishBarrel) SetEnabled(enabled bool) {
 func (b *FishBarrel) LoadConfig(_ *BarrelConfig) {
 }
 
+// HandleMessage is a no-op for the fish barrel; it only responds to commands.
 func (b *FishBarrel) HandleMessage(_ *Bot, _ string, _ string, _ string) {
 }
 

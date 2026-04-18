@@ -1,3 +1,5 @@
+// Package main implements the tbot runtime, IRC handling, and admin control.
+// This file contains the bot core, message dispatch, and configuration management.
 package main
 
 import (
@@ -27,6 +29,7 @@ const (
 	LevelError
 )
 
+// parseLogLevel converts a human-friendly log level string into an internal enum value.
 func parseLogLevel(value string) LogLevel {
 	switch strings.ToLower(value) {
 	case "debug":
@@ -42,6 +45,8 @@ func parseLogLevel(value string) LogLevel {
 	}
 }
 
+// Bot is the main runtime object for tbot.
+// It holds IRC state, configuration, barrel plugins, and admin details.
 type Bot struct {
 	config            *Config
 	configPath        string
@@ -68,6 +73,8 @@ type URLMetadata struct {
 	Detail string
 }
 
+// NewBot creates a new Bot instance from the loaded configuration.
+// It sets up logging, admin masks, and the built-in barrels.
 func NewBot(cfg *Config, configPath, pidFile string, quiet bool, overrideLevel string) (*Bot, error) {
 	output := io.Discard
 	if !quiet {
@@ -121,6 +128,7 @@ func NewBot(cfg *Config, configPath, pidFile string, quiet bool, overrideLevel s
 	return bot, nil
 }
 
+// writePidFile creates the pid file when the bot starts.
 func (b *Bot) writePidFile() error {
 	if b.pidFile == "" {
 		return nil
@@ -129,6 +137,7 @@ func (b *Bot) writePidFile() error {
 	return os.WriteFile(b.pidFile, data, 0o644)
 }
 
+// removePidFile removes the PID file when the bot exits.
 func (b *Bot) removePidFile() {
 	if b.pidFile == "" {
 		return
@@ -136,6 +145,8 @@ func (b *Bot) removePidFile() {
 	_ = os.Remove(b.pidFile)
 }
 
+// Run starts the bot main loop. It connects to IRC, processes incoming messages,
+// and supports clean shutdown or reconnect requests.
 func (b *Bot) Run() error {
 	if err := b.writePidFile(); err != nil {
 		return err
@@ -164,6 +175,7 @@ func (b *Bot) Run() error {
 	}
 }
 
+// connect opens a connection to the configured IRC server and completes registration.
 func (b *Bot) connect() error {
 	address := fmt.Sprintf("%s:%d", b.config.Network.Server, b.config.Network.Port)
 	var conn net.Conn
@@ -200,6 +212,7 @@ func (b *Bot) readLoop() error {
 	}
 }
 
+// handleMessage routes parsed IRC messages to the appropriate bot handlers.
 func (b *Bot) handleMessage(msg IRCMessage) {
 	switch msg.Command {
 	case "PING":
@@ -304,6 +317,8 @@ func (b *Bot) handleNickChange(msg IRCMessage) {
 	b.mu.Unlock()
 }
 
+// handlePrivMsg processes PRIVMSG events.
+// It handles private admin commands, public bot commands, and barrel message hooks.
 func (b *Bot) handlePrivMsg(msg IRCMessage) {
 	if len(msg.Params) < 1 {
 		return
@@ -338,6 +353,7 @@ func (b *Bot) handlePrivMsg(msg IRCMessage) {
 	}
 }
 
+// splitCommand breaks a command line into a lowercase command and arguments.
 func splitCommand(line string) (string, []string) {
 	parts := strings.Fields(line)
 	if len(parts) == 0 {
@@ -346,6 +362,8 @@ func splitCommand(line string) (string, []string) {
 	return strings.ToLower(parts[0]), parts[1:]
 }
 
+// dispatchPublicCommand runs bot commands issued in public channels.
+// It also allows barrels to override commands before the core bot handles them.
 func (b *Bot) dispatchPublicCommand(target, nick, command string, args []string) bool {
 	for _, barrel := range b.barrels {
 		if barrel.Enabled() && barrel.HandleCommand(b, target, nick, command, args) {
@@ -364,6 +382,7 @@ func (b *Bot) dispatchPublicCommand(target, nick, command string, args []string)
 	return false
 }
 
+// handlePrivateCommand executes admin-only commands sent in private messages.
 func (b *Bot) handlePrivateCommand(msg IRCMessage) {
 	if !b.isAdmin(msg.Prefix) {
 		b.sendMessage(msg.Nick, "admin commands require an authorized mask")
@@ -396,6 +415,8 @@ func (b *Bot) handlePrivateCommand(msg IRCMessage) {
 	}
 }
 
+// handleAdminBarrel supports admin management of loaded barrels.
+// Admins can list barrels or enable/disable them at runtime.
 func (b *Bot) handleAdminBarrel(replyTo string, args []string) {
 	if len(args) == 0 {
 		b.sendMessage(replyTo, "usage: barrel list|enable|disable <name>")
@@ -437,6 +458,8 @@ func (b *Bot) handleAdminBarrel(replyTo string, args []string) {
 	}
 }
 
+// handleAdminGet returns configuration values to an admin.
+// It supports exact keys and wildcard patterns across known config fields.
 func (b *Bot) handleAdminGet(replyTo string, args []string) {
 	if len(args) == 0 {
 		b.sendMessage(replyTo, "usage: get <config.key|pattern>")
@@ -459,10 +482,12 @@ func (b *Bot) handleAdminGet(replyTo string, args []string) {
 	b.sendMessage(replyTo, "unknown config key")
 }
 
+// handleAdminHelp sends the list of admin commands back to the requester.
 func (b *Bot) handleAdminHelp(replyTo string) {
 	b.sendMessage(replyTo, "admin commands: help|commands, reload, barrel list|enable|disable <name>, get <config.key|pattern>, set <config.key> <value>, write, reconnect, stop|shutdown")
 }
 
+// getConfigValue maps a known config key to its current runtime value.
 func (b *Bot) getConfigValue(key string) (string, bool) {
 	switch key {
 	case "bot.nick":
@@ -502,6 +527,7 @@ func (b *Bot) getConfigValue(key string) (string, bool) {
 	return "", false
 }
 
+// matchConfigKeys performs wildcard matching against the supported config key set.
 func (b *Bot) matchConfigKeys(pattern string) []string {
 	re, err := maskToRegexp(pattern)
 	if err != nil {

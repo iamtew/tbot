@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+// URLBarrel watches chat messages for URLs and posts page titles back to the channel.
+// It also caches the last seen URL per channel and respects a cooldown interval.
 type URLBarrel struct {
 	enabled  bool
 	cache    map[string]*URLMetadata
@@ -17,6 +19,7 @@ type URLBarrel struct {
 	lastSeen map[string]time.Time
 }
 
+// NewURLBarrel constructs the URL barrel with default cooldown settings.
 func NewURLBarrel() *URLBarrel {
 	return &URLBarrel{
 		cache:    make(map[string]*URLMetadata),
@@ -37,6 +40,8 @@ func (b *URLBarrel) SetEnabled(enabled bool) {
 	b.enabled = enabled
 }
 
+// LoadConfig reads barrel-specific settings from the common barrel config structure.
+// `cooldown` is interpreted in seconds and controls URL repeat suppression.
 func (b *URLBarrel) LoadConfig(cfg *BarrelConfig) {
 	b.cooldown = 60 * time.Second
 	if cfg == nil || cfg.Settings == nil {
@@ -61,6 +66,8 @@ func (b *URLBarrel) LoadConfig(cfg *BarrelConfig) {
 var urlRegex = regexp.MustCompile(`https?://[^\s]+`)
 var titleRegex = regexp.MustCompile(`(?is)<title[^>]*>(.*?)</title>`)
 
+// HandleMessage processes incoming channel messages and resolves the first URL
+// that is not suppressed by the barrel cooldown.
 func (b *URLBarrel) HandleMessage(bot *Bot, channel, nick, text string) {
 	if nick == bot.config.Bot.Nick {
 		return

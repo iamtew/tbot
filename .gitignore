@@ -1,3 +1,5 @@
+# Ignore local TOML configuration files, but keep the example config.
 *.toml
 !tbot.example.toml
+# Ignore the built executable.
 tbot.exe

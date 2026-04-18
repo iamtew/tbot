@@ -1,3 +1,5 @@
+# Build settings for tbot.
+# This Makefile is designed to work on Windows and Unix-like systems.
 BINARY := tbot
 PKG := github.com/iamtew/tbot
 GOFILES := $(wildcard *.go)
@@ -31,6 +33,7 @@ fmt:
 	$(GO) fmt ./...
 
 fmt-check:
+	# Format the code and verify formatting in one step.
 	$(GO) fmt ./...
 
 vet:
