@@ -67,6 +67,9 @@ func ExampleConfig() *Config {
 			"fish": {
 				Enabled: true,
 			},
+			"youtube": {
+				Enabled: true,
+			},
 		},
 	}
 }

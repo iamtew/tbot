@@ -24,3 +24,8 @@ cooldown = 60
 [barrel.fish]
 # Enable the fish joke barrel.
 enabled = true
+
+[barrel.youtube]
+# Enable YouTube link handling with enhanced metadata.
+enabled = true
+cooldown = 60

@@ -99,6 +99,7 @@ tbot ships with a compact standard barrel library that is designed to be extende
 |---|---|---|
 | `url` | Detects links in chat, resolves page titles, and stores the last URL details per channel | `more` |
 | `fish` | Adds a playful fish joke command to lighten the mood | `fish [nick ...]` |
+| `youtube` | Handles YouTube links with title, likes, and upload date | |
 
 ### Barrel behavior
 
@@ -112,6 +113,11 @@ tbot ships with a compact standard barrel library that is designed to be extende
 - Adds a playful `fish` command
 - Replies with a random fish joke
 - Can mention one or more nicknames in the response
+
+`youtube` barrel
+- Takes priority over `url` barrel for YouTube links (youtube.com or youtu.be)
+- Fetches title, likes, and upload date for YouTube videos
+- Respects cooldown to avoid repeated processing
 
 ## Command line options
 

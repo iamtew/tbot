@@ -123,6 +123,7 @@ func NewBot(cfg *Config, configPath, pidFile string, quiet bool, overrideLevel s
 	rand.Seed(time.Now().UnixNano())
 	bot.registerBarrel(NewURLBarrel())
 	bot.registerBarrel(NewFishBarrel())
+	bot.registerBarrel(NewYouTubeBarrel())
 	bot.applyBarrelConfig()
 
 	return bot, nil

@@ -74,6 +74,10 @@ func (b *URLBarrel) HandleMessage(bot *Bot, channel, nick, text string) {
 	}
 	urls := urlRegex.FindAllString(text, -1)
 	for _, rawURL := range urls {
+		// Skip YouTube URLs, let YouTube barrel handle them
+		if youtubeRegex.MatchString(rawURL) {
+			continue
+		}
 		key := channel + "|" + rawURL
 		if last, ok := b.lastSeen[key]; ok && time.Since(last) < b.cooldown {
 			continue
