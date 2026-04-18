@@ -33,7 +33,7 @@ type BarrelConfig struct {
 type Config struct {
 	Network NetworkConfig            `toml:"network"`
 	Bot     BotConfig                `toml:"bot"`
-	Barrels map[string]*BarrelConfig `toml:"barrels"`
+	Barrel  map[string]*BarrelConfig `toml:"barrel"`
 }
 
 func ExampleConfig() *Config {
@@ -54,7 +54,7 @@ func ExampleConfig() *Config {
 			LogFile:       "",
 			PidFile:       "",
 		},
-		Barrels: map[string]*BarrelConfig{
+		Barrel: map[string]*BarrelConfig{
 			"url": {
 				Enabled: true,
 			},

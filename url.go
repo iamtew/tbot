@@ -5,17 +5,24 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type URLBarrel struct {
-	enabled bool
-	cache   map[string]*URLMetadata
+	enabled  bool
+	cache    map[string]*URLMetadata
+	cooldown time.Duration
+	lastSeen map[string]time.Time
 }
 
 func NewURLBarrel() *URLBarrel {
-	return &URLBarrel{cache: make(map[string]*URLMetadata)}
+	return &URLBarrel{
+		cache:    make(map[string]*URLMetadata),
+		cooldown: 60 * time.Second,
+		lastSeen: make(map[string]time.Time),
+	}
 }
 
 func (b *URLBarrel) Name() string {
@@ -30,7 +37,25 @@ func (b *URLBarrel) SetEnabled(enabled bool) {
 	b.enabled = enabled
 }
 
-func (b *URLBarrel) LoadConfig(_ *BarrelConfig) {
+func (b *URLBarrel) LoadConfig(cfg *BarrelConfig) {
+	b.cooldown = 60 * time.Second
+	if cfg == nil || cfg.Settings == nil {
+		return
+	}
+	if raw, ok := cfg.Settings["cooldown"]; ok {
+		switch value := raw.(type) {
+		case int64:
+			b.cooldown = time.Duration(value) * time.Second
+		case int:
+			b.cooldown = time.Duration(value) * time.Second
+		case float64:
+			b.cooldown = time.Duration(int(value)) * time.Second
+		case string:
+			if secs, err := strconv.Atoi(value); err == nil {
+				b.cooldown = time.Duration(secs) * time.Second
+			}
+		}
+	}
 }
 
 var urlRegex = regexp.MustCompile(`https?://[^\s]+`)
@@ -42,11 +67,16 @@ func (b *URLBarrel) HandleMessage(bot *Bot, channel, nick, text string) {
 	}
 	urls := urlRegex.FindAllString(text, -1)
 	for _, rawURL := range urls {
+		key := channel + "|" + rawURL
+		if last, ok := b.lastSeen[key]; ok && time.Since(last) < b.cooldown {
+			continue
+		}
 		title, detail, err := fetchURLMetadata(rawURL)
 		if err != nil {
 			bot.logDebug("url fetch failed: %v", err)
 			continue
 		}
+		b.lastSeen[key] = time.Now()
 		b.cache[channel] = &URLMetadata{URL: rawURL, Title: title, Detail: detail}
 		bot.sendMessage(channel, fmt.Sprintf("[%s] %s", rawURL, title))
 		return

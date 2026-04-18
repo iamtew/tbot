@@ -55,7 +55,6 @@ type Bot struct {
 	quit              chan struct{}
 	restart           chan struct{}
 	barrels           map[string]Barrel
-	barrelConfigs     map[string]*BarrelConfig
 	channelModes      map[string]map[string]rune
 	adminMasks        map[string]struct{}
 	adminMaskPatterns []*regexp.Regexp
@@ -80,19 +79,18 @@ func NewBot(cfg *Config, configPath, pidFile string, quiet bool, overrideLevel s
 		level = overrideLevel
 	}
 	bot := &Bot{
-		config:        cfg,
-		configPath:    configPath,
-		pidFile:       pidFile,
-		logger:        logger,
-		logLevel:      parseLogLevel(level),
-		quiet:         quiet,
-		quit:          make(chan struct{}),
-		restart:       make(chan struct{}, 1),
-		barrels:       make(map[string]Barrel),
-		barrelConfigs: cfg.Barrels,
-		channelModes:  make(map[string]map[string]rune),
-		adminMasks:    make(map[string]struct{}),
-		lastURL:       make(map[string]*URLMetadata),
+		config:       cfg,
+		configPath:   configPath,
+		pidFile:      pidFile,
+		logger:       logger,
+		logLevel:     parseLogLevel(level),
+		quiet:        quiet,
+		quit:         make(chan struct{}),
+		restart:      make(chan struct{}, 1),
+		barrels:      make(map[string]Barrel),
+		channelModes: make(map[string]map[string]rune),
+		adminMasks:   make(map[string]struct{}),
+		lastURL:      make(map[string]*URLMetadata),
 	}
 
 	if cfg.Bot.LogFile != "" {
@@ -406,7 +404,7 @@ func (b *Bot) handleAdminBarrel(replyTo string, args []string) {
 	sub := strings.ToLower(args[0])
 	switch sub {
 	case "list":
-		lines := []string{"barrels:"}
+		lines := []string{"barrel:"}
 		for name, barrel := range b.barrels {
 			lines = append(lines, fmt.Sprintf("- %s: %t", name, barrel.Enabled()))
 		}
@@ -424,13 +422,13 @@ func (b *Bot) handleAdminBarrel(replyTo string, args []string) {
 		}
 		enabled := sub == "enable"
 		barrel.SetEnabled(enabled)
-		if b.config.Barrels == nil {
-			b.config.Barrels = make(map[string]*BarrelConfig)
+		if b.config.Barrel == nil {
+			b.config.Barrel = make(map[string]*BarrelConfig)
 		}
-		cfg := b.config.Barrels[name]
+		cfg := b.config.Barrel[name]
 		if cfg == nil {
 			cfg = &BarrelConfig{}
-			b.config.Barrels[name] = cfg
+			b.config.Barrel[name] = cfg
 		}
 		cfg.Enabled = enabled
 		b.sendMessage(replyTo, fmt.Sprintf("barrel %s %s", name, map[bool]string{true: "enabled", false: "disabled"}[enabled]))
@@ -494,9 +492,9 @@ func (b *Bot) getConfigValue(key string) (string, bool) {
 	case "network.channels":
 		return strings.Join(b.config.Network.Channels, ","), true
 	default:
-		for name, cfg := range b.config.Barrels {
+		for name, cfg := range b.config.Barrel {
 			switch key {
-			case fmt.Sprintf("barrels.%s.enabled", strings.ToLower(name)):
+			case fmt.Sprintf("barrel.%s.enabled", strings.ToLower(name)):
 				return fmt.Sprintf("%t", cfg.Enabled), true
 			}
 		}
@@ -535,8 +533,8 @@ func (b *Bot) configKeyMap() map[string]string {
 		"network.password":   b.config.Network.Password,
 		"network.channels":   strings.Join(b.config.Network.Channels, ","),
 	}
-	for name, cfg := range b.config.Barrels {
-		result[fmt.Sprintf("barrels.%s.enabled", strings.ToLower(name))] = fmt.Sprintf("%t", cfg.Enabled)
+	for name, cfg := range b.config.Barrel {
+		result[fmt.Sprintf("barrel.%s.enabled", strings.ToLower(name))] = fmt.Sprintf("%t", cfg.Enabled)
 	}
 	return result
 }
@@ -594,10 +592,15 @@ func (b *Bot) reloadConfig() {
 func (b *Bot) applyBarrelConfig() {
 	for name, barrel := range b.barrels {
 		enabled := false
-		if cfg, ok := b.config.Barrels[name]; ok {
+		var cfg *BarrelConfig
+		if b.config.Barrel != nil {
+			cfg = b.config.Barrel[name]
+		}
+		if cfg != nil {
 			enabled = cfg.Enabled
 		}
 		barrel.SetEnabled(enabled)
+		barrel.LoadConfig(cfg)
 	}
 }
 
@@ -670,8 +673,11 @@ func (b *Bot) sendMessage(target, text string) {
 
 func (b *Bot) registerBarrel(barrel Barrel) {
 	b.barrels[strings.ToLower(barrel.Name())] = barrel
-	if cfg, ok := b.config.Barrels[strings.ToLower(barrel.Name())]; ok {
-		barrel.SetEnabled(cfg.Enabled)
+	if b.config.Barrel != nil {
+		if cfg, ok := b.config.Barrel[strings.ToLower(barrel.Name())]; ok {
+			barrel.SetEnabled(cfg.Enabled)
+			barrel.LoadConfig(cfg)
+		}
 	}
 }
 

@@ -13,8 +13,9 @@ admins = ["tew!~tew@example.net"]
 log_level = "info"
 pidfile = ""
 
-[barrels.url]
+[barrel.url]
 enabled = true
+cooldown = 60
 
-[barrels.fish]
+[barrel.fish]
 enabled = true

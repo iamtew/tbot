@@ -22,7 +22,7 @@ tbot is a compact, eyes-on IRC bot for people who want command-driven control an
 | Feature | Description |
 |---|---|
 | Single-network connection | One IRC server, one nick, multiple channels |
-| Config file | TOML-based configuration for network, bot, admins, barrels |
+| Config file | TOML-based configuration for network, bot, admins, barrel |
 | Admin auth | Exact or wildcard usermask authorization for private admin commands |
 | Public commands | Command prefix configurable; default is `.` |
 | Runtime control | Reload config, write config, reconnect, stop without killing the bot |
@@ -51,7 +51,7 @@ tbot uses "barrels" to package optional behavior:
 - `url` and `fish` are included by default
 - Barrels can inspect channel messages and respond automatically
 - Barrels can add commands to public chat or private admin chat
-- Barrels can be configured and toggled from the TOML file
+- Barrels can be configured and toggled from the TOML file using `barrel.*` sections
 
 ## Getting started
 
@@ -103,6 +103,7 @@ tbot ships with a compact standard barrel library that is designed to be extende
 
 `url` barrel
 - Watches channel messages for `http://` or `https://` links
+- Resolves each unique URL once per configured cooldown interval
 - Fetches the page title and posts it back to chat
 - Supports `more` for extra metadata on the latest URL
 
