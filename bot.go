@@ -108,6 +108,9 @@ func NewBot(cfg *Config, configPath, pidFile string, quiet bool, overrideLevel s
 		bot.logger.SetOutput(io.MultiWriter(output, file))
 	}
 
+	bot.logInfo("bot initialized with log level %s, quiet=%t", level, quiet)
+	bot.logDebug("loaded config from %s", configPath)
+
 	for _, mask := range cfg.Bot.Admins {
 		if strings.ContainsAny(mask, "*?") {
 			if re, err := maskToRegexp(mask); err == nil {

@@ -29,3 +29,6 @@ enabled = true
 # Enable YouTube link handling with enhanced metadata.
 enabled = true
 cooldown = 60
+# YouTube Data API v3 key for fetching likes, dislikes, and upload date.
+# Get one from https://console.cloud.google.com/ (enable YouTube Data API v3)
+apikey = "your_youtube_api_key_here"

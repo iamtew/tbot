@@ -31,6 +31,7 @@ type BotConfig struct {
 // BarrelConfig describes optional behavior settings for a named barrel.
 type BarrelConfig struct {
 	Enabled  bool           `toml:"enabled"`
+	Apikey   string         `toml:"apikey,omitempty"`
 	Settings map[string]any `toml:"settings,omitempty"`
 }
 
@@ -69,6 +70,7 @@ func ExampleConfig() *Config {
 			},
 			"youtube": {
 				Enabled: true,
+				Apikey:  "your_youtube_api_key_here",
 			},
 		},
 	}

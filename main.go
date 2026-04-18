@@ -15,6 +15,8 @@ import (
 
 const version = "0.1"
 
+var buildInfo = "dev"
+
 func usage() {
 	fmt.Fprintf(flag.CommandLine.Output(), "tbot - IRC bot\n\n")
 	fmt.Fprintf(flag.CommandLine.Output(), "Usage: tbot [options] <config-file>\n\n")
@@ -93,7 +95,7 @@ func main() {
 	flag.Parse()
 
 	if showVersion {
-		fmt.Println(version)
+		fmt.Printf("%s %s\n", version, buildInfo)
 		return
 	}
 

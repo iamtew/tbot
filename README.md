@@ -99,7 +99,7 @@ tbot ships with a compact standard barrel library that is designed to be extende
 |---|---|---|
 | `url` | Detects links in chat, resolves page titles, and stores the last URL details per channel | `more` |
 | `fish` | Adds a playful fish joke command to lighten the mood | `fish [nick ...]` |
-| `youtube` | Handles YouTube links with title, likes, and upload date | |
+| `youtube` | Handles YouTube links with title, likes, and upload date (requires API key) | |
 
 ### Barrel behavior
 
@@ -117,7 +117,22 @@ tbot ships with a compact standard barrel library that is designed to be extende
 `youtube` barrel
 - Takes priority over `url` barrel for YouTube links (youtube.com or youtu.be)
 - Fetches title, likes, and upload date for YouTube videos
+- Requires a YouTube Data API v3 key in `barrel.youtube.apikey` for full metadata
+- Falls back to title-only if no API key is provided
 - Respects cooldown to avoid repeated processing
+
+### YouTube API Key Setup
+
+To enable full metadata fetching (likes, dislikes, upload date) for YouTube links, you need a YouTube Data API v3 key:
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project or select an existing one.
+3. In the API Library, search for and enable "YouTube Data API v3".
+4. Go to "Credentials" and create an API key.
+5. Add the key to your config under `[barrel.youtube] apikey = "your_key_here"`.
+6. Reload the config with the `reload` admin command.
+
+The API has a free quota of 10,000 units per day. Each video lookup costs 1 unit.
 
 ## Command line options
 
