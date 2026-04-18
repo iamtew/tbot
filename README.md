@@ -33,10 +33,12 @@ tbot is a compact, eyes-on IRC bot for people who want command-driven control an
 
 Admins can talk to tbot in private chat and run commands like:
 
+- `help` / `commands` — list available admin commands
 - `reload` — reload the configuration file at runtime
 - `barrel list` — show available barrel status
 - `barrel enable <name>` / `barrel disable <name>` — toggle features live
 - `get <config.key>` — inspect current bot settings
+- `get <config.*>` — search config keys using wildcard patterns
 - `set <config.key> <value>` — change runtime configuration
 - `write` — save the running configuration back to disk
 - `reconnect` — reconnect to IRC without exiting the process

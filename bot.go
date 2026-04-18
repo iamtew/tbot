@@ -11,6 +11,7 @@ import (
 	"net"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -373,6 +374,8 @@ func (b *Bot) handlePrivateCommand(msg IRCMessage) {
 	line := strings.TrimSpace(msg.Trailing)
 	cmd, args := splitCommand(line)
 	switch cmd {
+	case "help", "commands":
+		b.handleAdminHelp(msg.Nick)
 	case "reload":
 		b.reloadConfig()
 		b.sendMessage(msg.Nick, "configuration reloaded")
@@ -438,26 +441,104 @@ func (b *Bot) handleAdminBarrel(replyTo string, args []string) {
 
 func (b *Bot) handleAdminGet(replyTo string, args []string) {
 	if len(args) == 0 {
-		b.sendMessage(replyTo, "usage: get <config.key>")
+		b.sendMessage(replyTo, "usage: get <config.key|pattern>")
 		return
 	}
-	key := strings.Join(args, " ")
-	switch strings.ToLower(key) {
-	case "bot.nick":
-		b.sendMessage(replyTo, b.config.Bot.Nick)
-	case "bot.prefix", "bot.command_prefix":
-		b.sendMessage(replyTo, b.config.Bot.CommandPrefix)
-	case "bot.log_level":
-		b.sendMessage(replyTo, b.config.Bot.LogLevel)
-	case "bot.pidfile":
-		b.sendMessage(replyTo, b.config.Bot.PidFile)
-	case "network.server":
-		b.sendMessage(replyTo, b.config.Network.Server)
-	case "network.port":
-		b.sendMessage(replyTo, fmt.Sprintf("%d", b.config.Network.Port))
-	default:
-		b.sendMessage(replyTo, "unknown config key")
+	key := strings.ToLower(strings.Join(args, " "))
+	if strings.ContainsAny(key, "*?") {
+		matches := b.matchConfigKeys(key)
+		if len(matches) == 0 {
+			b.sendMessage(replyTo, "unknown config key")
+			return
+		}
+		b.sendMessage(replyTo, strings.Join(matches, " | "))
+		return
 	}
+	if value, ok := b.getConfigValue(key); ok {
+		b.sendMessage(replyTo, value)
+		return
+	}
+	b.sendMessage(replyTo, "unknown config key")
+}
+
+func (b *Bot) handleAdminHelp(replyTo string) {
+	b.sendMessage(replyTo, "admin commands: help|commands, reload, barrel list|enable|disable <name>, get <config.key|pattern>, set <config.key> <value>, write, reconnect, stop|shutdown")
+}
+
+func (b *Bot) getConfigValue(key string) (string, bool) {
+	switch key {
+	case "bot.nick":
+		return b.config.Bot.Nick, true
+	case "bot.user":
+		return b.config.Bot.User, true
+	case "bot.realname":
+		return b.config.Bot.RealName, true
+	case "bot.prefix", "bot.command_prefix":
+		return b.config.Bot.CommandPrefix, true
+	case "bot.admins":
+		return strings.Join(b.config.Bot.Admins, ","), true
+	case "bot.log_level":
+		return b.config.Bot.LogLevel, true
+	case "bot.log_file":
+		return b.config.Bot.LogFile, true
+	case "bot.pidfile":
+		return b.config.Bot.PidFile, true
+	case "network.server":
+		return b.config.Network.Server, true
+	case "network.port":
+		return fmt.Sprintf("%d", b.config.Network.Port), true
+	case "network.tls":
+		return fmt.Sprintf("%t", b.config.Network.TLS), true
+	case "network.password":
+		return b.config.Network.Password, true
+	case "network.channels":
+		return strings.Join(b.config.Network.Channels, ","), true
+	default:
+		for name, cfg := range b.config.Barrels {
+			switch key {
+			case fmt.Sprintf("barrels.%s.enabled", strings.ToLower(name)):
+				return fmt.Sprintf("%t", cfg.Enabled), true
+			}
+		}
+	}
+	return "", false
+}
+
+func (b *Bot) matchConfigKeys(pattern string) []string {
+	re, err := maskToRegexp(pattern)
+	if err != nil {
+		return nil
+	}
+	keys := make([]string, 0, 16)
+	for name := range b.configKeyMap() {
+		if re.MatchString(name) {
+			keys = append(keys, fmt.Sprintf("%s = %s", name, b.configKeyMap()[name]))
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+func (b *Bot) configKeyMap() map[string]string {
+	result := map[string]string{
+		"bot.nick":           b.config.Bot.Nick,
+		"bot.user":           b.config.Bot.User,
+		"bot.realname":       b.config.Bot.RealName,
+		"bot.command_prefix": b.config.Bot.CommandPrefix,
+		"bot.admins":         strings.Join(b.config.Bot.Admins, ","),
+		"bot.log_level":      b.config.Bot.LogLevel,
+		"bot.log_file":       b.config.Bot.LogFile,
+		"bot.pidfile":        b.config.Bot.PidFile,
+		"network.server":     b.config.Network.Server,
+		"network.port":       fmt.Sprintf("%d", b.config.Network.Port),
+		"network.tls":        fmt.Sprintf("%t", b.config.Network.TLS),
+		"network.password":   b.config.Network.Password,
+		"network.channels":   strings.Join(b.config.Network.Channels, ","),
+	}
+	for name, cfg := range b.config.Barrels {
+		result[fmt.Sprintf("barrels.%s.enabled", strings.ToLower(name))] = fmt.Sprintf("%t", cfg.Enabled)
+	}
+	return result
 }
 
 func (b *Bot) handleAdminSet(replyTo string, args []string) {
