@@ -105,6 +105,8 @@ func main() {
 	flag.StringVar(&configPath, "c", "", "Configuration file path")
 	flag.StringVar(&logLevel, "loglevel", "", "Logging level: debug, verbose, info, warn, error")
 	flag.StringVar(&logLevel, "L", "", "Logging level: debug, verbose, info, warn, error")
+	flag.StringVar(&logFile, "logfile", "", "Log file path (default: <config-dir>/tbot.log)")
+	flag.StringVar(&logFile, "l", "", "Log file path (default: <config-dir>/tbot.log)")
 	flag.BoolVar(&quiet, "quiet", false, "No output when running")
 	flag.BoolVar(&quiet, "Q", false, "No output when running")
 	flag.BoolVar(&daemon, "daemon", false, "Run in background and quiet")
@@ -192,6 +194,13 @@ func main() {
 		fmt.Fprintf(os.Stderr, "failed loading config %s: %v\n", configPath, err)
 		os.Exit(1)
 	}
+
+	// Set default log file if not specified
+	if logFile == "" {
+		logFile = filepath.Join(filepath.Dir(configPath), "tbot.log")
+	}
+	config.Bot.LogFile = logFile
+
 	if !quiet {
 		displayBuildInfo()
 		fmt.Printf("tbot %s starting with config %s\n", version, configPath)
