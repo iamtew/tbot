@@ -3,3 +3,4 @@
 !tbot.example.toml
 # Ignore the built executable.
 tbot.exe
+CLANKER_OUTPUT.md
