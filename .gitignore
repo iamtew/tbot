@@ -1,2 +1,3 @@
 *.toml
 !tbot.example.toml
+tbot.exe
