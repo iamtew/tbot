@@ -11,6 +11,8 @@ import (
 	"syscall"
 )
 
+const version = "0.1"
+
 func usage() {
 	fmt.Fprintf(flag.CommandLine.Output(), "tbot - IRC bot\n\n")
 	fmt.Fprintf(flag.CommandLine.Output(), "Usage: tbot [options] <config-file>\n\n")
@@ -59,6 +61,7 @@ func main() {
 		writeExample string
 		stop         bool
 		pidFile      string
+		showVersion  bool
 	)
 
 	flag.StringVar(&writeExample, "example", "", "Write example config to path and exit")
@@ -78,8 +81,15 @@ func main() {
 	flag.BoolVar(&stop, "S", false, "Stop the running bot and exit")
 	flag.StringVar(&pidFile, "pidfile", "", "PID file path")
 	flag.StringVar(&pidFile, "P", "", "PID file path")
+	flag.BoolVar(&showVersion, "version", false, "Show version and exit")
+	flag.BoolVar(&showVersion, "V", false, "Show version and exit")
 	flag.Usage = usage
 	flag.Parse()
+
+	if showVersion {
+		fmt.Println(version)
+		return
+	}
 
 	if stop {
 		if flag.NArg() > 0 && configPath == "" {

@@ -118,10 +118,11 @@ tbot ships with a compact standard barrel library that is designed to be extende
 - `-Q`, `--quiet` — suppress runtime output
 - `-P`, `--pidfile` — set the PID file path explicitly
 - `-S`, `--stop` — send a stop signal to the bot referenced by the PID file
+- `-V`, `--version` — display the current version number and exit
 - `-v`, `--verbose` — alias for `--loglevel=verbose`
+- `-d`, `--debug` — alias for `--loglevel=debug`
 
 The PID file can also be specified in the config under `[bot] pidfile = "..."`, otherwise it defaults to the config file name with `.pid` extension.
-- `-d`, `--debug` — alias for `--loglevel=debug`
 
 ## Why tbot?
 
