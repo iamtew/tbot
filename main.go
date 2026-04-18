@@ -5,12 +5,47 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strconv"
+	"strings"
+	"syscall"
 )
 
 func usage() {
 	fmt.Fprintf(flag.CommandLine.Output(), "tbot - IRC bot\n\n")
 	fmt.Fprintf(flag.CommandLine.Output(), "Usage: tbot [options] <config-file>\n\n")
 	flag.PrintDefaults()
+}
+
+func defaultPidFileForConfig(path string) string {
+	ext := strings.ToLower(filepath.Ext(path))
+	if ext == ".toml" || ext != "" {
+		return strings.TrimSuffix(path, ext) + ".pid"
+	}
+	return path + ".pid"
+}
+
+func stopBot(pidFile string) error {
+	data, err := os.ReadFile(pidFile)
+	if err != nil {
+		return err
+	}
+	pidString := strings.TrimSpace(string(data))
+	if pidString == "" {
+		return fmt.Errorf("pid file %s is empty", pidFile)
+	}
+	pid, err := strconv.Atoi(pidString)
+	if err != nil {
+		return err
+	}
+	proc, err := os.FindProcess(pid)
+	if err != nil {
+		return err
+	}
+	if runtime.GOOS == "windows" {
+		return proc.Kill()
+	}
+	return proc.Signal(syscall.SIGTERM)
 }
 
 func main() {
@@ -22,6 +57,8 @@ func main() {
 		verbose      bool
 		debug        bool
 		writeExample string
+		stop         bool
+		pidFile      string
 	)
 
 	flag.StringVar(&writeExample, "example", "", "Write example config to path and exit")
@@ -37,8 +74,32 @@ func main() {
 	flag.BoolVar(&verbose, "verbose", false, "Verbose logging, alias of --loglevel=verbose")
 	flag.BoolVar(&debug, "debug", false, "Debug logging, alias of --loglevel=debug")
 	flag.BoolVar(&debug, "d", false, "Debug logging, alias of --loglevel=debug")
+	flag.BoolVar(&stop, "stop", false, "Stop the running bot and exit")
+	flag.BoolVar(&stop, "S", false, "Stop the running bot and exit")
+	flag.StringVar(&pidFile, "pidfile", "", "PID file path")
+	flag.StringVar(&pidFile, "P", "", "PID file path")
 	flag.Usage = usage
 	flag.Parse()
+
+	if stop {
+		if flag.NArg() > 0 && configPath == "" {
+			configPath = flag.Arg(0)
+		}
+		if pidFile == "" {
+			if configPath == "" {
+				fmt.Fprintln(os.Stderr, "error: configuration file path or --pidfile is required to stop the bot")
+				usage()
+				os.Exit(1)
+			}
+			pidFile = defaultPidFileForConfig(filepath.Clean(configPath))
+		}
+		if err := stopBot(pidFile); err != nil {
+			fmt.Fprintf(os.Stderr, "failed to stop bot: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Fprintf(os.Stdout, "stop request sent using pid file %s\n", pidFile)
+		return
+	}
 
 	if writeExample != "" {
 		example := ExampleConfig()
@@ -75,13 +136,19 @@ func main() {
 	}
 
 	configPath = filepath.Clean(configPath)
+	if pidFile == "" {
+		pidFile = defaultPidFileForConfig(configPath)
+	} else {
+		pidFile = filepath.Clean(pidFile)
+	}
+
 	config, err := LoadConfig(configPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed loading config %s: %v\n", configPath, err)
 		os.Exit(1)
 	}
 
-	bot, err := NewBot(config, configPath, quiet, logLevel)
+	bot, err := NewBot(config, configPath, pidFile, quiet, logLevel)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to initialize bot: %v\n", err)
 		os.Exit(1)

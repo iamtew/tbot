@@ -43,6 +43,7 @@ func parseLogLevel(value string) LogLevel {
 type Bot struct {
 	config        *Config
 	configPath    string
+	pidFile       string
 	conn          net.Conn
 	reader        *bufio.Reader
 	writer        *bufio.Writer
@@ -65,7 +66,7 @@ type URLMetadata struct {
 	Detail string
 }
 
-func NewBot(cfg *Config, configPath string, quiet bool, overrideLevel string) (*Bot, error) {
+func NewBot(cfg *Config, configPath, pidFile string, quiet bool, overrideLevel string) (*Bot, error) {
 	output := io.Discard
 	if !quiet {
 		output = os.Stdout
@@ -78,6 +79,7 @@ func NewBot(cfg *Config, configPath string, quiet bool, overrideLevel string) (*
 	bot := &Bot{
 		config:        cfg,
 		configPath:    configPath,
+		pidFile:       pidFile,
 		logger:        logger,
 		logLevel:      parseLogLevel(level),
 		quiet:         quiet,
@@ -110,7 +112,27 @@ func NewBot(cfg *Config, configPath string, quiet bool, overrideLevel string) (*
 	return bot, nil
 }
 
+func (b *Bot) writePidFile() error {
+	if b.pidFile == "" {
+		return nil
+	}
+	data := []byte(fmt.Sprintf("%d\n", os.Getpid()))
+	return os.WriteFile(b.pidFile, data, 0o644)
+}
+
+func (b *Bot) removePidFile() {
+	if b.pidFile == "" {
+		return
+	}
+	_ = os.Remove(b.pidFile)
+}
+
 func (b *Bot) Run() error {
+	if err := b.writePidFile(); err != nil {
+		return err
+	}
+	defer b.removePidFile()
+
 	for {
 		if err := b.connect(); err != nil {
 			return err

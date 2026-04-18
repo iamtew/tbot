@@ -78,7 +78,15 @@ Run with your config:
 
 - `tbot ./tbot.toml`
 
-> Public commands use the configured prefix (default `.`). Admin commands must be sent as private messages from a configured admin mask.
+Set a custom pid file if you want to manage the running service explicitly:
+
+- `tbot -P ./tbot.pid ./tbot.toml`
+
+Stop a running bot using the pid file:
+
+- `tbot -S -P ./tbot.pid`
+
+> By default, the pid file is written next to the config file using the same name and a `.pid` extension. Public commands use the configured prefix (default `.`). Admin commands must be sent as private messages from a configured admin mask.
 
 ## Barrels
 
@@ -108,6 +116,8 @@ tbot ships with a compact standard barrel library that is designed to be extende
 - `-D`, `--daemon` — run quietly in the background
 - `-L`, `--loglevel` — `debug`, `verbose`, `info`, `warn`, `error`
 - `-Q`, `--quiet` — suppress runtime output
+- `-P`, `--pidfile` — set the PID file path explicitly
+- `-S`, `--stop` — send a stop signal to the bot referenced by the PID file
 - `-v`, `--verbose` — alias for `--loglevel=verbose`
 - `-d`, `--debug` — alias for `--loglevel=debug`
 
