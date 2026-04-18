@@ -47,6 +47,57 @@ Update barrel config namespace and add URL cooldown
 - Prevent repeated URL resolution in the same channel before cooldown expires
 ```
 
+## Commit Message Structure
+
+All commits should follow this format for clarity and consistency:
+
+```
+<type>: <short description>
+
+- <detail with specific change>
+- <detail with specific change>
+  * <sub-detail or implementation note>
+  * <sub-detail or implementation note>
+- <detail with specific change>
+
+<explanation of why this change is valuable or what problem it solves>
+```
+
+**Commit Types:**
+- `feat`: New feature or functionality
+- `fix`: Bug fix
+- `refactor`: Code restructuring without behavior change
+- `docs`: Documentation updates
+- `test`: Test additions or updates
+- `chore`: Maintenance tasks, build system updates
+
+**Key Points:**
+- Bullet points list the specific changes made
+- Sub-bullets (with `*`) add implementation details or scope clarification
+- Final paragraph explains the value proposition or context
+- Keep subject line under 50 characters
+- Use present tense: "Add" not "Added"
+
+**Example:**
+
+```
+feat: add build info with git metadata
+
+- Add build-time metadata injection via Makefile ldflags:
+  * Git commit hash (short variant)
+  * Human-readable build timestamp
+  * Git dirty state (clean/dirty)
+  * Git branch name
+  * GitHub repository URL
+- Add --build-info flag to display detailed build information
+- Restore startup message showing version and config path
+- Update build system to capture git details at compile time
+- Support Windows and Unix platforms with conditional shell commands
+
+This helps identify the exact build state and repository information
+for any running instance of the bot.
+```
+
 ## Behavior for AI and Clankers
 
 - If asked to make a change, verify the current file contents.
