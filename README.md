@@ -53,6 +53,19 @@ tbot uses "barrels" to package optional behavior:
 
 ## Getting started
 
+### Windows developer setup
+
+If you are developing on Windows, install a UNIX-compatible build shell and make utilities before using `make` or building from the repository.
+
+Recommended setup:
+
+- Install MSYS2 with `winget install MSYS2.MSYS2`
+- Open the MSYS2 shell
+- Run `pacman -Syu` to update the package database
+- Install build tools with `pacman -S base-devel`
+
+Once MSYS2 and development tools are installed, you can use the provided `Makefile` on Windows.
+
 Build the bot:
 
 - `go build`
