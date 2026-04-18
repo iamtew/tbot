@@ -1,6 +1,5 @@
 # the start of tbot
 ___
-*This README explains how to configure, run, and extend tbot.*
 *tbot - tew's bot (because naming things is hard!)*
 
 IRC bot designed and implemented by @iamtew, for him and his friends. It suits his needs, maybe not yours!
