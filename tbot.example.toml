@@ -1,0 +1,19 @@
+[network]
+server = "irc.example.net"
+port = 6667
+tls = false
+channels = ["#example"]
+
+[bot]
+nick = "tbot"
+user = "tbot"
+realname = "tbot IRC bot"
+command_prefix = "."
+admins = ["tew!~tew@example.net"]
+log_level = "info"
+
+[barrels.url]
+enabled = true
+
+[barrels.fish]
+enabled = true
