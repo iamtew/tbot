@@ -7,60 +7,104 @@ ___
 
 ## Functionality of tbot
 
-IRC bot connects to server and...
-- uses TOML file for configuration
-- bot connect to single IRC network
-- configuration only supports one IRC network
-- configuration includes:
-- - connection settings to IRC network
-- - bot name and details
-- - bot admins identified by `nickname!username@example.net` user mask
-- - array of `barrels` that's enabled and disabled. default state disabled, if a barrel isn't listed it will be disabled
-- bot answers to commands in public chat
-- commands will be written in chat, prefixed by a special character
-- command character can be configured, default is a period .
-- public chat commands can be restricted by various levels of users, such as op, halfop, voice, normal
-- bot answers to admins in private chat, for admin tasks
-- bot has multiple commands that can be executed by admins in private chat
-- commands available in base bot:
-- - reload, which reloads configuration
-- - barrel, list status of available barrels, and enable/disable barrels at runtime
-- - get, get configuration information about the bot
-- - set, set various configuration changes at runtime
-- - write, write running configuration to disk
-- - reconnect, reconnect to the IRC network, don't exit process
-- - stop/shutdown, stop the bot and exit process
-- extensive logging of bot events and IRC events
-- logging level can be confiured in configuration file and also at runtime 
-- logging can be written to disk if configured
-- `barrels` or `barrels of fun` are submodules that extend the bots
-- barrels can: 
-- - can monitor channel and react with actions to patterns, regex
-- - can add new commands to be available in public channels, or private chat
-- - can be enabled/disabled at runtime
-- - can be configured in the config file
-- tbot is designed to be run from the command line
-- tbot works on both linux and windows
-- tbot is written in Golang 
-- tbot is designed to be installed on a system in the path
-- tbot will use the configuration file specified on the command line, example: `tbot ~/path/to/tbot.toml`
-- tbot will not start without a configuration specified, unless the write config template option is true
-- tbot will print all events of what is happening in terminal, configured by the log level option, and can be disabled with the quiet option
-- tbot command line options are:
-- - -h,--help this help page
-- - -e,--example write example config on path specified and exit
-- - -D,--daemon run tbot in background, detach from shell, also implies quiet option true
-- - -L,--loglevel debug, verbose, info
-- - -Q,--quiet no output when running
-- - -v,--verbose verbose logging, alias of --loglevel=verbose
-- - -d,--debug debug logging, alias of --loglevel=debug
+tbot is a compact, eyes-on IRC bot for people who want command-driven control and fast extensibility.
 
-## Barrels 
+### What makes tbot special
 
-the following barrels are part of the standard library of barrels
-the barrels live in a subdirectory or something.
-- barrel.url, listens to messages in a channel and look up the title of the webpage every time someone post a http or https link
-- barrel.url, when someone types `more` after a url has been resolved, more details about the web page should be displayed.
-- barrel.fish, adds the command fish, which when executed makes the bot write out a joke about fish.
-- barrel.fish, command parses any argument for nicknames in channel and writes the joke about them.
-- barrel.fish, has an extensive library of fish jokes in an array or list in the code.
+- Lightweight, single-network IRC client
+- Configured with a human-readable TOML file
+- Admin-safe private control via IRC usermasks
+- Modular barrel architecture for feature plugins
+- Built-in logging and runtime management
+
+### Core capabilities
+
+| Feature | Description |
+|---|---|
+| Single-network connection | One IRC server, one nick, multiple channels |
+| Config file | TOML-based configuration for network, bot, admins, barrels |
+| Admin auth | Exact usermask authorization for private admin commands |
+| Public commands | Command prefix configurable; default is `.` |
+| Runtime control | Reload config, write config, reconnect, stop without killing the bot |
+| Logging | Console output with optional disk log capture |
+| Barrel plugins | Enable or disable submodules live without restarting |
+
+### Admin command list
+
+Admins can talk to tbot in private chat and run commands like:
+
+- `reload` — reload the configuration file at runtime
+- `barrel list` — show available barrel status
+- `barrel enable <name>` / `barrel disable <name>` — toggle features live
+- `get <config.key>` — inspect current bot settings
+- `set <config.key> <value>` — change runtime configuration
+- `write` — save the running configuration back to disk
+- `reconnect` — reconnect to IRC without exiting the process
+- `stop` / `shutdown` — shut the bot down cleanly
+
+### Barrel system
+
+tbot uses "barrels" to package optional behavior:
+
+- `url` and `fish` are included by default
+- Barrels can inspect channel messages and respond automatically
+- Barrels can add commands to public chat or private admin chat
+- Barrels can be configured and toggled from the TOML file
+
+## Getting started
+
+Build the bot:
+
+- `go build`
+
+Generate a starter config:
+
+- `tbot -e tbot.example.toml`
+
+Run with your config:
+
+- `tbot ./tbot.toml`
+
+> Public commands use the configured prefix (default `.`). Admin commands must be sent as private messages from a configured admin mask.
+
+## Barrels
+
+tbot ships with a compact standard barrel library that is designed to be extended.
+
+| Barrel | Purpose | Commands |
+|---|---|---|
+| `url` | Detects links in chat, resolves page titles, and stores the last URL details per channel | `more` |
+| `fish` | Adds a playful fish joke command to lighten the mood | `fish [nick ...]` |
+
+### Barrel behavior
+
+`url` barrel
+- Watches channel messages for `http://` or `https://` links
+- Fetches the page title and posts it back to chat
+- Supports `more` for extra metadata on the latest URL
+
+`fish` barrel
+- Adds a playful `fish` command
+- Replies with a random fish joke
+- Can mention one or more nicknames in the response
+
+## Command line options
+
+- `-h`, `--help` — show help text
+- `-e`, `--example` — write an example config file and exit
+- `-D`, `--daemon` — run quietly in the background
+- `-L`, `--loglevel` — `debug`, `verbose`, `info`, `warn`, `error`
+- `-Q`, `--quiet` — suppress runtime output
+- `-v`, `--verbose` — alias for `--loglevel=verbose`
+- `-d`, `--debug` — alias for `--loglevel=debug`
+
+## Why tbot?
+
+tbot is designed to be a practical, no-nonsense IRC bot with strong runtime control and a simple plugin model. It’s ideal for small teams who want an IRC assistant that can be managed live and extended with new barrel behavior over time.
+
+Use it when you want:
+
+- fast setup with `go build`
+- secure admin control via usermasks
+- live feature toggling without restart
+- a compact bot that still feels powerful
