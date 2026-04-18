@@ -439,6 +439,8 @@ func (b *Bot) handleAdminGet(replyTo string, args []string) {
 		b.sendMessage(replyTo, b.config.Bot.CommandPrefix)
 	case "bot.log_level":
 		b.sendMessage(replyTo, b.config.Bot.LogLevel)
+	case "bot.pidfile":
+		b.sendMessage(replyTo, b.config.Bot.PidFile)
 	case "network.server":
 		b.sendMessage(replyTo, b.config.Network.Server)
 	case "network.port":
@@ -467,6 +469,9 @@ func (b *Bot) handleAdminSet(replyTo string, args []string) {
 		b.config.Bot.LogLevel = value
 		b.logLevel = parseLogLevel(value)
 		b.sendMessage(replyTo, "log level updated")
+	case "bot.pidfile":
+		b.config.Bot.PidFile = value
+		b.sendMessage(replyTo, "pidfile updated")
 	case "bot.log_file":
 		b.config.Bot.LogFile = value
 		b.sendMessage(replyTo, "log file updated (restart to change existing log writer)")

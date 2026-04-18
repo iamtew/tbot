@@ -11,6 +11,7 @@ realname = "tbot IRC bot"
 command_prefix = "."
 admins = ["tew!~tew@example.net"]
 log_level = "info"
+pidfile = ""
 
 [barrels.url]
 enabled = true

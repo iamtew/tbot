@@ -22,6 +22,7 @@ type BotConfig struct {
 	Admins        []string `toml:"admins"`
 	LogLevel      string   `toml:"log_level"`
 	LogFile       string   `toml:"log_file,omitempty"`
+	PidFile       string   `toml:"pidfile,omitempty"`
 }
 
 type BarrelConfig struct {
@@ -51,6 +52,7 @@ func ExampleConfig() *Config {
 			Admins:        []string{"tew!~tew@example.net"},
 			LogLevel:      "info",
 			LogFile:       "",
+			PidFile:       "",
 		},
 		Barrels: map[string]*BarrelConfig{
 			"url": {

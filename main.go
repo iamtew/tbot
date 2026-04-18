@@ -136,16 +136,18 @@ func main() {
 	}
 
 	configPath = filepath.Clean(configPath)
-	if pidFile == "" {
-		pidFile = defaultPidFileForConfig(configPath)
-	} else {
-		pidFile = filepath.Clean(pidFile)
-	}
-
 	config, err := LoadConfig(configPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed loading config %s: %v\n", configPath, err)
 		os.Exit(1)
+	}
+
+	if pidFile == "" {
+		if config.Bot.PidFile != "" {
+			pidFile = filepath.Clean(config.Bot.PidFile)
+		} else {
+			pidFile = defaultPidFileForConfig(configPath)
+		}
 	}
 
 	bot, err := NewBot(config, configPath, pidFile, quiet, logLevel)
