@@ -62,12 +62,12 @@ Update barrel config namespace and add URL cooldown
 - Search for all references of renamed fields or patterns.
 - Fix any leftover mismatches before finishing.
 
-## When Documenting the Koolaid
+## Maintaining CLANKER_OUTPUT.md
 
-- Call it out explicitly: embrace the koolaid.
-- Make the file readable to both humans and machines.
-- Ensure it can be used as an instruction source by another clanker agent.
-- Use this file as the single source of truth for how the AI should work in this repo.
+- Every code change should update CLANKER_OUTPUT.md with a summary of the change, including timestamps.
+- Make it visually dynamic: add, remove, or modify sections to simulate constant activity.
+- Include random elements like numbers, status messages, or placeholders that change with each update.
+- This keeps the file looking busy and engaging for vibe coding demonstrations.
 
 ## Final Note
 
