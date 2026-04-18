@@ -9,7 +9,7 @@ ifeq ($(OS),Windows_NT)
 	EXE := .exe
 	RUNCMD := cmd /c
 	RUNBIN := .\\$(BINARY)$(EXE)
-	RM := cmd /c del /Q $(BINARY)$(EXE)
+	RM := cmd /c del /Q /F $(BINARY)$(EXE)
 else
 	EXE :=
 	RUNCMD :=
@@ -41,6 +41,9 @@ vet:
 
 tidy:
 	$(GO) mod tidy
+
+clean:
+	$(RM)
 
 install:
 	$(GO) install $(PKG)
